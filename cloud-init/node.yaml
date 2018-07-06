@@ -1,0 +1,11 @@
+packages:
+  - nfs-common
+
+runcmd:
+  # NFS
+  - mkdir -p /shared
+  - echo "${master_ip}:/shared      /shared      nfs rw,noatime,nolock,hard,tcp 0 0" >> /etc/fstab
+  - mount -a
+  # Kubeadm  
+  - echo "while [ ! -f /shared/kubeadm-join.bash ]; do sleep 1; done; sudo bash /shared/kubeadm-join.bash" >> /tmp/install.sh
+  - su ${admin_user} -c "/tmp/install.sh"

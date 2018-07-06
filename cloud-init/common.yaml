@@ -1,0 +1,22 @@
+#cloud-config
+packages:
+  - git
+
+package_reboot_if_required: true
+manage_resolv_conf: true
+
+runcmd:
+  - echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
+
+write_files:
+  - path: /tmp/install.sh
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      git clone https://github.com/data-8/kubeadm-bootstrap.git /tmp/kubeadm-bootstrap
+      cd /tmp/kubeadm-bootstrap
+      sudo ./install-kubeadm.bash
+
+disable_ec2_metadata: true
+timezone: "America/Montreal"
+output: { all: "| tee -a /var/log/cloud-init-output.log" }

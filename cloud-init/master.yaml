@@ -1,0 +1,96 @@
+packages:
+  - nfs-kernel-server
+
+runcmd:
+  # NFS
+  - mkdir -p /shared
+  - chown ${admin_user} /shared
+  - systemctl enable nfs-kernel-server
+  - systemctl start nfs-kernel-server
+  # Kubeadm  
+  - echo "SUDO_UID=${admin_user} sudo -E /tmp/kubeadm-bootstrap/init-master.bash" >> /tmp/install.sh
+  - su ${admin_user} -c "/tmp/install.sh"
+  - kubeadm token create --print-join-command > /shared/kubeadm-join.bash
+  # BinderHub  
+  - su ${admin_user} -c "/tmp/install-binderhub.sh"
+
+write_files:
+  - path: /etc/exports
+    content: |
+      /shared  ${cidr}(rw,sync,no_root_squash,no_all_squash)
+
+  - path: /tmp/install-binderhub.sh
+    permissions: 0755
+    content: |
+      kubectl create -f /tmp/pv.yaml
+      sudo helm repo add jupyterhub https://jupyterhub.github.io/helm-chart
+      sudo helm repo update
+      sudo helm install jupyterhub/binderhub --version=v0.1.0-85ac189 \
+          --name=binderhub --namespace=binderhub -f /tmp/binderhub.yaml
+      kubectl create -f /tmp/ingress.yaml
+
+  - path: /tmp/ingress.yaml
+    content: |
+      apiVersion: extensions/v1beta1
+      kind: Ingress
+      metadata:
+        namespace: binderhub
+        name: binder-ingress
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          nginx.ingress.kubernetes.io/rewrite-target: /
+      spec:
+        rules:
+        - host: binder.calculquebec.cloud
+          http:
+            paths:
+            - path: /
+              backend:
+                serviceName: binder
+                servicePort: 80
+        - host: jupyter.calculquebec.cloud
+          http:
+            paths:
+            - path: /
+              backend:
+                serviceName: proxy-public
+                servicePort: 80
+
+
+  - path: /tmp/binderhub.yaml
+    content: |
+      hub:
+        url: http://${jupyter_domain}
+      service:
+        type: NodePort
+      jupyterhub:
+        hub:
+          services:
+            binder:
+              apiToken: "${api_token}"
+        proxy:
+          service:
+            type: NodePort
+          secretToken: "${secret_token}"
+      singleuser:
+        storage:
+          dynamic:
+            storageClass: local-storage
+      storage:
+        capacity: 2Gi
+
+  - path: /tmp/pv.yaml
+    content: |
+      kind: PersistentVolume
+      apiVersion: v1
+      metadata:
+        name: pvc-db-hub
+        labels:
+          type: local
+      spec:
+        capacity:
+          storage: 1Gi
+        accessModes:
+          - ReadWriteOnce
+        hostPath:
+          path: "/shared"
