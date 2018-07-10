@@ -23,47 +23,59 @@ write_files:
     permissions: 0755
     content: |
       kubectl create -f /tmp/pv.yaml
+      sudo helm install --name kube-lego --namespace=support  stable/kube-lego -f /tmp/kube-lego.yaml
       sudo helm repo add jupyterhub https://jupyterhub.github.io/helm-chart
       sudo helm repo update
       sudo helm install jupyterhub/binderhub --version=v0.1.0-85ac189 \
           --name=binderhub --namespace=binderhub -f /tmp/binderhub.yaml
-      kubectl create -f /tmp/ingress.yaml
 
-  - path: /tmp/ingress.yaml
+  - path: /tmp/kube-lego.yaml
     content: |
-      apiVersion: extensions/v1beta1
-      kind: Ingress
-      metadata:
-        namespace: binderhub
-        name: binder-ingress
-        annotations:
-          kubernetes.io/ingress.class: "nginx"
-          nginx.ingress.kubernetes.io/rewrite-target: /
-      spec:
-        rules:
-        - host: binder.calculquebec.cloud
-          http:
-            paths:
-            - path: /
-              backend:
-                serviceName: binder
-                servicePort: 80
-        - host: jupyter.calculquebec.cloud
-          http:
-            paths:
-            - path: /
-              backend:
-                serviceName: proxy-public
-                servicePort: 80
+      ## kube-lego configuration
+      ## Ref: https://github.com/jetstack/kube-lego
+      ##
+      config:
+        ## Email address to use for registration with Let's Encrypt
+        ##
+        LEGO_EMAIL: ${TSL_email}
 
+        ## Let's Encrypt API endpoint
+        ## Production: https://acme-v01.api.letsencrypt.org/directory
+        ## Staging: https://acme-staging.api.letsencrypt.org/directory
+        ##
+        LEGO_URL: https://acme-v01.api.letsencrypt.org/directory
+
+        ## Specify which ingress class to watch
+        ##
+        LEGO_SUPPORTED_INGRESS_CLASS: nginx
+
+        ## Specify which ingress provider should be watched
+        ## nginx and gce are the only two options presently
+        ##
+        LEGO_SUPPORTED_INGRESS_PROVIDER: nginx
+
+        ## Specify what ingress class should something be
+        ## if no ingress class is specified
+        ##
+        LEGO_DEFAULT_INGRESS_CLASS: nginx
+
+      ## rbac creates the correct permissions
+      rbac:
+        create: true
 
   - path: /tmp/binderhub.yaml
     content: |
-      hub:
-        url: http://${jupyter_domain}
-      service:
-        type: NodePort
       jupyterhub:
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/tls-acme: "true"
+          hosts:
+            - jupyter.calculquebec.cloud
+          tls:
+            - hosts:
+              - jupyter.calculquebec.cloud
+              secretName: kubelego-tls-jupyterhub
         hub:
           services:
             binder:
@@ -72,12 +84,23 @@ write_files:
           service:
             type: NodePort
           secretToken: "${secret_token}"
-      singleuser:
-        storage:
-          dynamic:
-            storageClass: local-storage
+
+      # BinderHub config
+      hub:
+        url: https://${jupyter_domain}
+      service:
+        type: NodePort
       storage:
         capacity: 2Gi
+      ingress:
+        enabled: true
+        hosts:
+          - binder.calculquebec.cloud
+        annotations:
+          kubernetes.io/ingress.class: nginx
+        https:
+          enabled: true
+          type: kube-lego
 
   - path: /tmp/pv.yaml
     content: |

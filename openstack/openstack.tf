@@ -63,6 +63,7 @@ data "template_file" "ubuntu_master" {
     secret_token   = "${random_id.token.1.hex}"
     jupyter_domain = "${var.jupyter_domain}"
     admin_user     = "${var.admin_user}"
+    TSL_email    = "${var.TSL_email}"
   }
 }
 

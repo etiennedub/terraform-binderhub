@@ -33,3 +33,7 @@ variable "binder_domain" {
 variable "admin_user" {
   default = "ubuntu"
 }
+
+variable "TSL_email" {
+  default = "example@calculquebec.ca"
+}
