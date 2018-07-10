@@ -1,5 +1,5 @@
 variable "nb_nodes" {
-  default = 0
+  default = 1
 }
 
 variable "shared_storage_size" {
@@ -36,4 +36,14 @@ variable "admin_user" {
 
 variable "TSL_email" {
   default = "example@calculquebec.ca"
+}
+
+# RAM allocation per user
+variable "mem_alloc_gb" {
+  default = 1.5
+}
+
+# CPU allocation per user (floating point values are supported)
+variable "cpu_alloc" {
+  default = 1
 }

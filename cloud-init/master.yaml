@@ -77,21 +77,32 @@ write_files:
               - jupyter.calculquebec.cloud
               secretName: kubelego-tls-jupyterhub
         hub:
+          nodeSelector:
+            kubernetes.io/hostname: master
           services:
             binder:
               apiToken: "${api_token}"
         proxy:
+          nodeSelector:
+            kubernetes.io/hostname: master
           service:
             type: NodePort
           secretToken: "${secret_token}"
+        singleuser:
+          memory:
+             guarantee: ${mem_alloc}G
+          cpu:
+             guarantee: ${cpu_alloc}
 
       # BinderHub config
       hub:
+        nodeSelector:
+          kubernetes.io/hostname: master
         url: https://${jupyter_domain}
       service:
         type: NodePort
       storage:
-        capacity: 2Gi
+        capacity: 2G
       ingress:
         enabled: true
         hosts:
@@ -101,6 +112,9 @@ write_files:
         https:
           enabled: true
           type: kube-lego
+      build:
+        nodeSelector:
+          kubernetes.io/hostname: master
 
   - path: /tmp/pv.yaml
     content: |

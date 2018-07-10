@@ -23,8 +23,6 @@ To tear down the cluster, from the `openstack` folder, call: `terraform destroy`
 
 ## TODO
 
-- Setup HTTPS
-- Load balancing notebooks between nodes
 - Support others cloud providers (AWS, GCP, Azure, ...)
 - Support others DNS providers
 - User authentification

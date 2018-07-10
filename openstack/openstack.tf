@@ -63,7 +63,9 @@ data "template_file" "ubuntu_master" {
     secret_token   = "${random_id.token.1.hex}"
     jupyter_domain = "${var.jupyter_domain}"
     admin_user     = "${var.admin_user}"
-    TSL_email    = "${var.TSL_email}"
+    TSL_email      = "${var.TSL_email}"
+    cpu_alloc      = "${var.cpu_alloc}"
+    mem_alloc      = "${var.mem_alloc_gb}"
   }
 }
 
@@ -149,12 +151,20 @@ resource "openstack_compute_instance_v2" "master" {
 resource "openstack_compute_instance_v2" "node" {
   count    = "${var.nb_nodes}"
   name     = "node${count.index + 1}"
-  image_id = "${data.openstack_images_image_v2.ubuntu.id}"
 
   flavor_name     = "${var.os_flavor_node}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
   security_groups = ["${openstack_compute_secgroup_v2.secgroup_1.name}"]
   user_data       = "${element(data.template_cloudinit_config.node_config.*.rendered, count.index)}"
+
+  block_device {
+    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    source_type           = "image"
+    volume_size           = "${var.shared_storage_size}"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
+  }
 }
 
 resource "openstack_networking_floatingip_v2" "fip_1" {
