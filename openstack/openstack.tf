@@ -62,6 +62,7 @@ data "template_file" "ubuntu_master" {
     api_token      = "${random_id.token.0.hex}"
     secret_token   = "${random_id.token.1.hex}"
     jupyter_domain = "${var.jupyter_domain}"
+    binder_domain  = "${var.jupyter_domain}"
     admin_user     = "${var.admin_user}"
     TSL_email      = "${var.TSL_email}"
     cpu_alloc      = "${var.cpu_alloc}"
