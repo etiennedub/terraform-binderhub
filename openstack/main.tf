@@ -2,7 +2,7 @@ variable "nb_nodes" {
   default = 1
 }
 
-variable "shared_storage_size" {
+variable "instance_volume_size" {
   default = 10
 }
 

@@ -142,7 +142,7 @@ resource "openstack_compute_instance_v2" "master" {
   block_device {
     uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
     source_type           = "image"
-    volume_size           = "${var.shared_storage_size}"
+    volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
@@ -161,7 +161,7 @@ resource "openstack_compute_instance_v2" "node" {
   block_device {
     uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
     source_type           = "image"
-    volume_size           = "${var.shared_storage_size}"
+    volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
