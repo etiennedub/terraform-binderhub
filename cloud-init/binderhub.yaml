@@ -1,24 +1,8 @@
-packages:
-  - nfs-kernel-server
-
 runcmd:
-  # NFS
-  - mkdir -p /shared
-  - chown ${admin_user} /shared
-  - systemctl enable nfs-kernel-server
-  - systemctl start nfs-kernel-server
-  # Kubeadm  
-  - echo "SUDO_UID=${admin_user} sudo -E /tmp/kubeadm-bootstrap/init-master.bash" >> /tmp/install.sh
-  - su ${admin_user} -c "/tmp/install.sh"
-  - kubeadm token create --print-join-command > /shared/kubeadm-join.bash
   # BinderHub  
   - su ${admin_user} -c "/tmp/install-binderhub.sh"
 
 write_files:
-  - path: /etc/exports
-    content: |
-      /shared  ${cidr}(rw,sync,no_root_squash,no_all_squash)
-
   - path: /tmp/install-binderhub.sh
     permissions: 0755
     content: |
@@ -37,7 +21,7 @@ write_files:
       config:
         ## Email address to use for registration with Let's Encrypt
         ##
-        LEGO_EMAIL: ${TSL_email}
+        LEGO_EMAIL: ${TLS_email}
 
         ## Let's Encrypt API endpoint
         ## Production: https://acme-v01.api.letsencrypt.org/directory

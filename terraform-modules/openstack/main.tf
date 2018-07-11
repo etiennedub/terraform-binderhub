@@ -2,11 +2,6 @@ provider "openstack" {}
 
 data "openstack_networking_subnet_v2" "subnet_1" {}
 
-resource "random_id" "token" {
-  count       = 2
-  byte_length = 32
-}
-
 resource "openstack_compute_secgroup_v2" "secgroup_1" {
   name        = "secgroup"
   description = "BinderHub security group"
@@ -54,33 +49,26 @@ resource "openstack_compute_secgroup_v2" "secgroup_1" {
   }
 }
 
-data "template_file" "ubuntu_master" {
-  template = "${file("${path.module}/../cloud-init/master.yaml")}"
+data "template_file" "kubeadm_master" {
+  template = "${file("${path.module}/../../cloud-init/kubeadm/master.yaml")}"
 
   vars {
-    cidr           = "${data.openstack_networking_subnet_v2.subnet_1.cidr}"
-    api_token      = "${random_id.token.0.hex}"
-    secret_token   = "${random_id.token.1.hex}"
-    jupyter_domain = "${var.jupyter_domain}"
-    binder_domain  = "${var.jupyter_domain}"
-    admin_user     = "${var.admin_user}"
-    TSL_email      = "${var.TSL_email}"
-    cpu_alloc      = "${var.cpu_alloc}"
-    mem_alloc      = "${var.mem_alloc_gb}"
+    cidr       = "${data.openstack_networking_subnet_v2.subnet_1.cidr}"
+    admin_user = "ubuntu"
   }
 }
 
-data "template_file" "ubuntu_node" {
-  template = "${file("${path.module}/../cloud-init/node.yaml")}"
+data "template_file" "kubeadm_node" {
+  template = "${file("${path.module}/../../cloud-init/kubeadm/node.yaml")}"
 
   vars {
     master_ip  = "${openstack_compute_instance_v2.master.network.0.fixed_ip_v4}"
-    admin_user = "${var.admin_user}"
+    admin_user = "ubuntu"
   }
 }
 
-data "template_file" "ubuntu_common" {
-  template = "${file("${path.module}/../cloud-init/common.yaml")}"
+data "template_file" "kubeadm_common" {
+  template = "${file("${path.module}/../../cloud-init/kubeadm/common.yaml")}"
 
   vars {
   }
@@ -91,14 +79,14 @@ data "template_cloudinit_config" "node_config" {
     filename     = "common.yaml"
     merge_type   = "list(append)+dict(recurse_array)+str()"
     content_type = "text/cloud-config"
-    content      = "${data.template_file.ubuntu_common.rendered}"
+    content      = "${data.template_file.kubeadm_common.rendered}"
   }
 
   part {
     filename     = "node.yaml"
     merge_type   = "list(append)+dict(recurse_array)+str()"
     content_type = "text/cloud-config"
-    content      = "${data.template_file.ubuntu_node.rendered}"
+    content      = "${data.template_file.kubeadm_node.rendered}"
   }
 }
 
@@ -107,14 +95,21 @@ data "template_cloudinit_config" "master_config" {
     filename     = "common.yaml"
     merge_type   = "list(append)+dict(recurse_array)+str()"
     content_type = "text/cloud-config"
-    content      = "${data.template_file.ubuntu_common.rendered}"
+    content      = "${data.template_file.kubeadm_common.rendered}"
   }
 
   part {
     filename     = "master.yaml"
     merge_type   = "list(append)+dict(recurse_array)+str()"
     content_type = "text/cloud-config"
-    content      = "${data.template_file.ubuntu_master.rendered}"
+    content      = "${data.template_file.kubeadm_master.rendered}"
+  }
+
+  part {
+    filename     = "binderhub.yaml"
+    merge_type   = "list(append)+dict(recurse_array)+str()"
+    content_type = "text/cloud-config"
+    content      = "${var.binderhub_template}"
   }
 }
 

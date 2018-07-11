@@ -3,23 +3,34 @@
 ## Requirements
 
 - Install [Terraform](https://www.terraform.io/downloads.html)
-- [Cloudflare API token](https://api.cloudflare.com/) to interact with the DNS resources
-- Openstack OpenRC file
 
-## Usage
+## Cloud Providers
 
-### OpenStack Cloud
+### OpenStack
 
-1. Go into `openstack` folder : `cd openstack`.
-3. Download your project openrc file from the OpenStack _Access and security_ section.
-4. Source your project openrc file : `source _project_-openrsh.sh`.
-2. Export the following environment variables `CLOUDFLARE_EMAIL` and `CLOUDFLARE_TOKEN` to setup the DNS.
-5. Initiate the Terraform state : `terraform init`.
-7. Adapt the cluster variables in the `main.tf` file (i.e.: # nodes, domain name, ssh key, etc).
-8. Verify the Terraform plan : `terraform plan`.
-9. Apply the Terraform plan : `terraform apply`.
+1. Download your project openrc file from the OpenStack _Access and security_ section.
+2. Source your project openrc file : `source _project_-openrsh.sh`.
 
-To tear down the cluster, from the `openstack` folder, call: `terraform destroy`.
+
+## DNS Providers
+
+### CloudFare
+
+1. Export your CloudFare email associated with the account : `export CLOUDFLARE_EMAIL="my_email@example.com"`
+2. Export your Cloudflare API token : `export CLOUDFLARE_TOKEN="<YOUR API TOKEN>"`
+
+## Terraform deployment
+
+1. In this repository, create a new folder and go into : `mkdir my_cluster; cd my_cluster`.
+2. Copy the corresponding cloud provider `.tf` file from the `examples/providers` directory : `cp ../examples/providers/my_provider.tf .`
+3. Copy the corresponding DNS provider `.tf` file from the `examples/dns` directory : `cp ../examples/dns/my_dns.tf .`
+4. Adapt the cluster variables in both `.tf` files (i.e.: # nodes, domain name, ssh key, etc).
+5. Apply your credentials for the cloud and the DNS provider.
+6. Initiate the Terraform state : `terraform init`.
+7. Verify the Terraform plan : `terraform plan`.
+8. Apply the Terraform plan : `terraform apply`.
+
+To tear down the cluster, from the `my_cluster` folder, call: `terraform destroy`.
 
 ## TODO
 
