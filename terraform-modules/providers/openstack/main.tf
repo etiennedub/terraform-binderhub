@@ -50,7 +50,7 @@ resource "openstack_compute_secgroup_v2" "secgroup_1" {
 }
 
 data "template_file" "kubeadm_master" {
-  template = "${file("${path.module}/../../cloud-init/kubeadm/master.yaml")}"
+  template = "${file("${path.module}/../../../cloud-init/kubeadm/master.yaml")}"
 
   vars {
     cidr       = "${data.openstack_networking_subnet_v2.subnet_1.cidr}"
@@ -59,7 +59,7 @@ data "template_file" "kubeadm_master" {
 }
 
 data "template_file" "kubeadm_node" {
-  template = "${file("${path.module}/../../cloud-init/kubeadm/node.yaml")}"
+  template = "${file("${path.module}/../../../cloud-init/kubeadm/node.yaml")}"
 
   vars {
     master_ip  = "${openstack_compute_instance_v2.master.network.0.fixed_ip_v4}"
@@ -68,7 +68,7 @@ data "template_file" "kubeadm_node" {
 }
 
 data "template_file" "kubeadm_common" {
-  template = "${file("${path.module}/../../cloud-init/kubeadm/common.yaml")}"
+  template = "${file("${path.module}/../../../cloud-init/kubeadm/common.yaml")}"
 
   vars {
   }
@@ -103,13 +103,6 @@ data "template_cloudinit_config" "master_config" {
     merge_type   = "list(append)+dict(recurse_array)+str()"
     content_type = "text/cloud-config"
     content      = "${data.template_file.kubeadm_master.rendered}"
-  }
-
-  part {
-    filename     = "binderhub.yaml"
-    merge_type   = "list(append)+dict(recurse_array)+str()"
-    content_type = "text/cloud-config"
-    content      = "${var.binderhub_template}"
   }
 }
 

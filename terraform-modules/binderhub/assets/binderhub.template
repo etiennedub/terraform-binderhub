@@ -1,0 +1,50 @@
+jupyterhub:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - ${jupyter_domain}
+    tls:
+      - hosts:
+        - ${jupyter_domain}
+        secretName: kubelego-tls-jupyterhub
+  hub:
+    nodeSelector:
+      kubernetes.io/hostname: master
+    services:
+      binder:
+        apiToken: "${api_token}"
+  proxy:
+    nodeSelector:
+      kubernetes.io/hostname: master
+    service:
+      type: NodePort
+    secretToken: "${secret_token}"
+  singleuser:
+    memory:
+       guarantee: ${mem_alloc}G
+    cpu:
+       guarantee: ${cpu_alloc}
+
+# BinderHub config
+hub:
+  nodeSelector:
+    kubernetes.io/hostname: master
+  url: https://${jupyter_domain}
+service:
+  type: NodePort
+storage:
+  capacity: 2G
+ingress:
+  enabled: true
+  hosts:
+    - ${binder_domain}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  https:
+    enabled: true
+    type: kube-lego
+build:
+  nodeSelector:
+    kubernetes.io/hostname: master

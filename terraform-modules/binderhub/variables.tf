@@ -19,5 +19,9 @@ variable "cpu_alloc" {
 }
 
 variable "admin_user" {
-  default = "ubuntu"
+  description = "User with root access"
+}
+
+variable "private_key_path" {
+  description = "Path to private key file"
 }

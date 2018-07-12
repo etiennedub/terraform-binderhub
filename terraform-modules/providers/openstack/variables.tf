@@ -22,7 +22,7 @@ variable "os_flavor_master" {
   description = "Master flavor"
 }
 
-variable "binderhub_template" {
-  description = "BinderHub cloud-init file content (binderhub module output)"
+variable "admin_user" {
+  description = "User with root access (provider module output)"
+  default     = "ubuntu"
 }
-
