@@ -11,6 +11,14 @@
 1. Download your project openrc file from the OpenStack _Access and security_ section.
 2. Source your project openrc file : `source _project_-openrsh.sh`.
 
+### Google Cloud
+
+1. Install the [gcloud](https://cloud.google.com/sdk/install) command-line tool
+2. Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+3. Install [helm](https://docs.helm.sh/using_helm/#installing-helm)
+4. Login to Google Cloud : `gcloud auth application-default login`
+
+**Note:** `GCloud` require to install `kubectl` and `helm` on your local setup. Those tools are used to configure remotely `kubernetes` containers.
 
 ## DNS Providers
 

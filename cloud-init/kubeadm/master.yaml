@@ -10,8 +10,10 @@ runcmd:
   - systemctl start nfs-kernel-server
   # Kubeadm  
   - echo "SUDO_UID=${admin_user} sudo -E /tmp/kubeadm-bootstrap/init-master.bash" >> /tmp/install.sh
+  - chown -R ${admin_user} /home/${admin_user}/.helm  
   - su ${admin_user} -c "/tmp/install.sh"
   - kubeadm token create --print-join-command > /shared/kubeadm-join.bash
+  - kubectl label nodes master type=production
 
 write_files:
   - path: /etc/exports

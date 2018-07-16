@@ -20,8 +20,18 @@ variable "cpu_alloc" {
 
 variable "admin_user" {
   description = "User with root access"
+  default     = ""
 }
 
 variable "private_key_path" {
   description = "Path to private key file"
+  default     = ""
+}
+
+variable "is_gcp" {
+  description = "Set to true to install BinderHub on Google Cloud"
+  default     = false
+}
+
+variable "public_ip" {
 }

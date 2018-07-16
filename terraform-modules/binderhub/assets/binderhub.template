@@ -11,13 +11,13 @@ jupyterhub:
         secretName: kubelego-tls-jupyterhub
   hub:
     nodeSelector:
-      kubernetes.io/hostname: master
+      type: production
     services:
       binder:
         apiToken: "${api_token}"
   proxy:
     nodeSelector:
-      kubernetes.io/hostname: master
+      type: production
     service:
       type: NodePort
     secretToken: "${secret_token}"
@@ -30,7 +30,7 @@ jupyterhub:
 # BinderHub config
 hub:
   nodeSelector:
-    kubernetes.io/hostname: master
+    type: production
   url: https://${jupyter_domain}
 service:
   type: NodePort
@@ -47,4 +47,4 @@ ingress:
     type: kube-lego
 build:
   nodeSelector:
-    kubernetes.io/hostname: master
+    type: production
