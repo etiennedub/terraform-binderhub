@@ -4,16 +4,12 @@ packages:
 
 runcmd:
   # NFS
+  - echo "/shared `hostname -I | awk '{print $1}' | grep -Po '(\d+\.){3}'`0/24(rw,sync,no_root_squash,no_all_squash)" > /etc/exports
   - mkdir -p /shared
   - chown ${admin_user} /shared
   - systemctl enable nfs-kernel-server
-  - systemctl start nfs-kernel-server
+  - systemctl restart nfs-kernel-server
   # Kubeadm  
   - echo "SUDO_UID=${admin_user} sudo -E /tmp/kubeadm-bootstrap/init-master.bash" >> /tmp/install.sh
   - su ${admin_user} -c "/tmp/install.sh"
   - kubeadm token create --print-join-command > /shared/kubeadm-join.bash
-
-write_files:
-  - path: /etc/exports
-    content: |
-      /shared  ${cidr}(rw,sync,no_root_squash,no_all_squash)

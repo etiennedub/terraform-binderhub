@@ -34,3 +34,13 @@ variable "project_name" {
 variable "image_id" {
   description = "Disk image ID"
 }
+
+variable "is_computecanada" {
+  description = "Set true if hosted on ComputeCanada"
+  default     = false
+}
+
+variable "cc_private_network" {
+  description = "Private network to join (must be set on ComputeCanada)"
+  default     = ""
+}

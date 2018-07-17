@@ -9,6 +9,8 @@ module "provider" {
   os_flavor_master     = "p2-3gb"
   os_flavor_node       = "p2-3gb"
   image_id             = "080462a8-42b2-4875-9ff6-bf014eb1ee99"
+  is_computecanada     = true
+  cc_private_network   = "default_network"
 }
 
 module "binderhub" {
