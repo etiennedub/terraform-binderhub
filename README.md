@@ -14,9 +14,9 @@
 
 ## DNS Providers
 
-### CloudFare
+### CloudFlare
 
-1. Export your CloudFare email associated with the account : `export CLOUDFLARE_EMAIL="my_email@example.com"`
+1. Export your CloudFlare email associated with the account : `export CLOUDFLARE_EMAIL="my_email@example.com"`
 2. Export your Cloudflare API token : `export CLOUDFLARE_TOKEN="<YOUR API TOKEN>"`
 
 ## Terraform deployment

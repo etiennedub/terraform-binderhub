@@ -1,15 +1,11 @@
 jupyterhub:
   ingress:
     enabled: true
-    annotations:
-      kubernetes.io/tls-acme: "true"
     hosts:
-      - ${jupyter_domain}
-    tls:
-      - hosts:
-        - ${jupyter_domain}
-        secretName: kubelego-tls-jupyterhub
+      - ${domain}
+
   hub:
+    baseUrl: /jupyter/
     nodeSelector:
       kubernetes.io/hostname: master
     services:
@@ -31,7 +27,7 @@ jupyterhub:
 hub:
   nodeSelector:
     kubernetes.io/hostname: master
-  url: https://${jupyter_domain}
+  url: https://${domain}/jupyter
 service:
   type: NodePort
 storage:
@@ -39,7 +35,7 @@ storage:
 ingress:
   enabled: true
   hosts:
-    - ${binder_domain}
+    - ${domain}
   annotations:
     kubernetes.io/ingress.class: nginx
   https:

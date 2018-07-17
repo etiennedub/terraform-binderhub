@@ -1,7 +1,6 @@
 module "dns" {
-  source = "../terraform-modules/dns/cloudfare"
+  source = "../terraform-modules/dns/cloudflare"
 
-  jupyter_domain = "jupyter1.calculquebec.cloud"
-  binder_domain  = "binder1.calculquebec.cloud"
-  public_ip      = "${module.openstack.public_ip}"
+  domain    = "mydomainname.com"
+  public_ip = "${module.openstack.public_ip}"
 }

@@ -14,8 +14,7 @@ module "provider" {
 module "binderhub" {
   source = "../terraform-modules/binderhub"
 
-  jupyter_domain   = "${module.dns.jupyter_domain}"
-  binder_domain    = "${module.dns.binder_domain}"
+  domain    = "${module.dns.domain}"
   admin_user       = "${module.provider.admin_user}"
   TLS_email        = "email@example.ca"
   mem_alloc_gb     = 1.5
