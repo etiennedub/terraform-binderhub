@@ -19,6 +19,12 @@
 1. Export your CloudFlare email associated with the account : `export CLOUDFLARE_EMAIL="my_email@example.com"`
 2. Export your Cloudflare API token : `export CLOUDFLARE_TOKEN="<YOUR API TOKEN>"`
 
+### JetStream
+
+JetStream domain name is automatically associated with your cloud service.
+
+**Note:** this is only available on JetStream cloud services and incompatible with ComputeCanada.
+
 ## Terraform deployment
 
 1. In this repository, create a new folder and go into : `mkdir my_cluster; cd my_cluster`.
