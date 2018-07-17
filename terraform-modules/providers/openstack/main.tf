@@ -1,9 +1,7 @@
 provider "openstack" {}
 
-data "openstack_networking_subnet_v2" "subnet_1" {}
-
 resource "openstack_compute_secgroup_v2" "secgroup_1" {
-  name        = "secgroup"
+  name        = "${var.project_name}-secgroup"
   description = "BinderHub security group"
 
   rule {
@@ -49,12 +47,24 @@ resource "openstack_compute_secgroup_v2" "secgroup_1" {
   }
 }
 
+resource "openstack_networking_subnet_v2" "subnet" {
+  name        = "subnet"
+  network_id  = "${openstack_networking_network_v2.network_1.id}"
+  ip_version  = 4
+  cidr        = "10.0.1.0/24"
+  enable_dhcp = true
+}
+
+resource "openstack_networking_network_v2" "network_1" {
+  name = "${var.project_name}-network"
+}
+
 data "template_file" "kubeadm_master" {
   template = "${file("${path.module}/../../../cloud-init/kubeadm/master.yaml")}"
 
   vars {
-    cidr       = "${data.openstack_networking_subnet_v2.subnet_1.cidr}"
-    admin_user = "ubuntu"
+    cidr       = "${openstack_networking_subnet_v2.subnet.cidr}"
+    admin_user = "${var.admin_user}"
   }
 }
 
@@ -63,7 +73,7 @@ data "template_file" "kubeadm_node" {
 
   vars {
     master_ip  = "${openstack_compute_instance_v2.master.network.0.fixed_ip_v4}"
-    admin_user = "ubuntu"
+    admin_user = "${var.admin_user}"
   }
 }
 
@@ -107,17 +117,22 @@ data "template_cloudinit_config" "master_config" {
 }
 
 resource "openstack_compute_keypair_v2" "keypair" {
-  name       = "keypair"
+  name       = "${var.project_name}-keypair"
   public_key = "${file(var.public_key_path)}"
 }
 
-data "openstack_images_image_v2" "ubuntu" {
-  name = "Ubuntu-16.04.2-Xenial-x64-2017-07"
-  most_recent = true
+data "openstack_networking_network_v2" "ext_network" {
+  name = "${var.os_external_network}"
+}
 
-  properties {
-    key = "value"
-  }
+resource "openstack_networking_router_v2" "router_1" {
+  name                = "${var.project_name}-router"
+  external_network_id = "${data.openstack_networking_network_v2.ext_network.id}"
+}
+
+resource "openstack_networking_router_interface_v2" "router_interface_1" {
+  router_id = "${openstack_networking_router_v2.router_1.id}"
+  subnet_id = "${openstack_networking_subnet_v2.subnet.id}"
 }
 
 resource "openstack_compute_instance_v2" "master" {
@@ -128,12 +143,16 @@ resource "openstack_compute_instance_v2" "master" {
   user_data       = "${data.template_cloudinit_config.master_config.rendered}"
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
+  }
+
+  network {
+    name = "${openstack_networking_network_v2.network_1.name}"
   }
 }
 
@@ -147,12 +166,16 @@ resource "openstack_compute_instance_v2" "node" {
   user_data       = "${element(data.template_cloudinit_config.node_config.*.rendered, count.index)}"
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
+  }
+
+  network {
+    name = "${openstack_networking_network_v2.network_1.name}"
   }
 }
 
