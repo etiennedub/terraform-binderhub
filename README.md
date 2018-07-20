@@ -32,9 +32,10 @@ JetStream domain name is automatically associated with your cloud service.
 3. Copy the corresponding DNS provider `.tf` file from the `examples/dns` directory : `cp ../examples/dns/my_dns.tf .`
 4. Adapt the cluster variables in both `.tf` files (i.e.: # nodes, domain name, ssh key, etc).
 5. Apply your credentials for the cloud and the DNS provider.
-6. Initiate the Terraform state : `terraform init`.
-7. Verify the Terraform plan : `terraform plan`.
-8. Apply the Terraform plan : `terraform apply`.
+6. Set your username to be accessible in Terraform: `export TF_VAR_username=$OS_USERNAME`
+7. Initiate the Terraform state : `terraform init`.
+8. Verify the Terraform plan : `terraform plan`.
+9. Apply the Terraform plan : `terraform apply`.
 
 To tear down the cluster, from the `my_cluster` folder, call: `terraform destroy`.
 

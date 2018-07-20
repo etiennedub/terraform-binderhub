@@ -148,7 +148,7 @@ resource "openstack_compute_keypair_v2" "keypair" {
 }
 
 resource "openstack_compute_instance_v2" "master" {
-  name            = "master"
+  name            = "${var.project_name}-master"
   flavor_name     = "${var.os_flavor_master}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
   security_groups = ["${openstack_compute_secgroup_v2.secgroup_1.name}"]
@@ -170,7 +170,7 @@ resource "openstack_compute_instance_v2" "master" {
 
 resource "openstack_compute_instance_v2" "node" {
   count    = "${var.nb_nodes}"
-  name     = "node${count.index + 1}"
+  name     = "${var.project_name}-node${count.index + 1}"
 
   flavor_name     = "${var.os_flavor_node}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"

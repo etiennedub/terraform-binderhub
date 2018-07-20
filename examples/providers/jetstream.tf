@@ -1,7 +1,7 @@
 module "provider" {
   source = "../terraform-modules/providers/openstack"
 
-  project_name         = "BinderHub"
+  project_name         = "${var.username}"
   nb_nodes             = 1
   instance_volume_size = 20
   public_key_path      = "./key.pub"
@@ -20,4 +20,9 @@ module "binderhub" {
   mem_alloc_gb     = 1.5
   cpu_alloc        = 1
   private_key_path = "~/.ssh/id_rsa"
+}
+
+variable "username" {
+  description = "Username"
+  type        = "string"
 }
