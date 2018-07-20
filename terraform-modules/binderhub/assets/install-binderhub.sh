@@ -12,9 +12,7 @@ fi
 
 kubectl create -f /tmp/pv.yaml
 # Wait until helm tiller is initialized
-until helm install --name kube-lego --namespace=support  stable/kube-lego -f /tmp/kube-lego.yaml; do
-  sleep 10
-done
+helm install --name kube-lego --namespace=support  stable/kube-lego -f /tmp/kube-lego.yaml
 helm repo add jupyterhub https://jupyterhub.github.io/helm-chart
 helm repo update
 helm install jupyterhub/binderhub --version=v0.1.0-85ac189 \

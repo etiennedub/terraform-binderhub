@@ -36,7 +36,7 @@ resource "google_container_node_pool" "production" {
   node_count = "1"
 
   node_config {
-    machine_type = "n1-standard-1"
+    machine_type = "n1-standard-2"
     image_type   = "ubuntu"
     labels {
       type = "production"
@@ -53,12 +53,19 @@ resource "google_container_node_pool" "worker" {
   name       = "worker"
   cluster    = "${google_container_cluster.cluster-binderhub.name}"
   zone       = "${var.zone_region}"
-  node_count = "0"
+  node_count = "1"
 
   node_config {
     machine_type = "n1-standard-1"
     image_type   = "ubuntu"
   }
+}
+
+resource "google_compute_address" "default" {
+  depends_on = ["google_container_node_pool.production", "google_container_cluster.cluster-binderhub"]
+
+  name   = "binderhub-ip"
+  region = "${var.zone}"
 }
 
 resource "null_resource" "remote_install" {
@@ -71,6 +78,7 @@ resource "null_resource" "remote_install" {
       cluster = "${local.cluster_name}"
       zone    = "${var.zone_region}"
       project = "${var.project_name}"
+      ip      = "${google_compute_address.default.address}"
     }
   }
 }
