@@ -2,7 +2,7 @@
 packages:
   - git
 
-package_reboot_if_required: true
+package_reboot_if_required: false
 manage_resolv_conf: true
 
 runcmd:

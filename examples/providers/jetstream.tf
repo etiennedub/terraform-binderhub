@@ -5,18 +5,16 @@ module "provider" {
   nb_nodes             = 1
   instance_volume_size = 20
   public_key_path      = "./key.pub"
-  os_external_network  = "net04_ext"
-  os_flavor_master     = "p2-3gb"
-  os_flavor_node       = "p2-3gb"
-  image_id             = "080462a8-42b2-4875-9ff6-bf014eb1ee99"
-  is_computecanada     = true
-  cc_private_network   = "default_network"
+  os_external_network  = "public"
+  os_flavor_master     = "m1.small"
+  os_flavor_node       = "m1.small"
+  image_id             = "3e2cfdd5-f726-4535-b035-26f72917aa96"
 }
 
 module "binderhub" {
   source = "../terraform-modules/binderhub"
 
-  domain           = "${module.dns.domain}"
+  domain    = "${module.dns.domain}"
   admin_user       = "${module.provider.admin_user}"
   TLS_email        = "email@example.ca"
   mem_alloc_gb     = 1.5

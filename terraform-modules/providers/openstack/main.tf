@@ -1,9 +1,7 @@
 provider "openstack" {}
 
-data "openstack_networking_subnet_v2" "subnet_1" {}
-
 resource "openstack_compute_secgroup_v2" "secgroup_1" {
-  name        = "secgroup"
+  name        = "${var.project_name}-secgroup"
   description = "BinderHub security group"
 
   rule {
@@ -49,13 +47,51 @@ resource "openstack_compute_secgroup_v2" "secgroup_1" {
   }
 }
 
+locals {
+  network_name = "${var.project_name}-network"
+}
+
+resource "openstack_networking_subnet_v2" "subnet" {
+  count = "${1 - var.is_computecanada}"
+
+  name        = "subnet"
+  network_id  = "${openstack_networking_network_v2.network_1.id}"
+  ip_version  = 4
+  cidr        = "10.0.1.0/24"
+  enable_dhcp = true
+}
+
+
+resource "openstack_networking_network_v2" "network_1" {
+  count = "${1 - var.is_computecanada}"
+
+  name = "${local.network_name}"
+}
+
 data "template_file" "kubeadm_master" {
   template = "${file("${path.module}/../../../cloud-init/kubeadm/master.yaml")}"
 
   vars {
-    cidr       = "${data.openstack_networking_subnet_v2.subnet_1.cidr}"
-    admin_user = "ubuntu"
+    admin_user = "${var.admin_user}"
   }
+}
+
+data "openstack_networking_network_v2" "ext_network" {
+  name = "${var.os_external_network}"
+}
+
+resource "openstack_networking_router_v2" "router_1" {
+  count = "${1 - var.is_computecanada}"
+
+  name                = "${var.project_name}-router"
+  external_network_id = "${data.openstack_networking_network_v2.ext_network.id}"
+}
+
+resource "openstack_networking_router_interface_v2" "router_interface_1" {
+  count = "${1 - var.is_computecanada}"
+
+  router_id = "${openstack_networking_router_v2.router_1.id}"
+  subnet_id = "${openstack_networking_subnet_v2.subnet.id}"
 }
 
 data "template_file" "kubeadm_node" {
@@ -63,7 +99,7 @@ data "template_file" "kubeadm_node" {
 
   vars {
     master_ip  = "${openstack_compute_instance_v2.master.network.0.fixed_ip_v4}"
-    admin_user = "ubuntu"
+    admin_user = "${var.admin_user}"
   }
 }
 
@@ -107,39 +143,34 @@ data "template_cloudinit_config" "master_config" {
 }
 
 resource "openstack_compute_keypair_v2" "keypair" {
-  name       = "keypair"
+  name       = "${var.project_name}-keypair"
   public_key = "${file(var.public_key_path)}"
 }
 
-data "openstack_images_image_v2" "ubuntu" {
-  name = "Ubuntu-16.04.2-Xenial-x64-2017-07"
-  most_recent = true
-
-  properties {
-    key = "value"
-  }
-}
-
 resource "openstack_compute_instance_v2" "master" {
-  name            = "master"
+  name            = "${var.project_name}-master"
   flavor_name     = "${var.os_flavor_master}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
   security_groups = ["${openstack_compute_secgroup_v2.secgroup_1.name}"]
   user_data       = "${data.template_cloudinit_config.master_config.rendered}"
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
   }
+
+  network = {
+    name = "${var.is_computecanada ? var.cc_private_network : local.network_name}"
+  }
 }
 
 resource "openstack_compute_instance_v2" "node" {
   count    = "${var.nb_nodes}"
-  name     = "node${count.index + 1}"
+  name     = "${var.project_name}-node${count.index + 1}"
 
   flavor_name     = "${var.os_flavor_node}"
   key_pair        = "${openstack_compute_keypair_v2.keypair.name}"
@@ -147,12 +178,16 @@ resource "openstack_compute_instance_v2" "node" {
   user_data       = "${element(data.template_cloudinit_config.node_config.*.rendered, count.index)}"
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = "${var.instance_volume_size}"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
+  }
+
+  network = {
+    name = "${var.is_computecanada ? var.cc_private_network : local.network_name}"
   }
 }
 

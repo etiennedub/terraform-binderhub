@@ -1,9 +1,5 @@
-variable "jupyter_domain" {
-  description = "JupyterHub domain name"
-}
-
-variable "binder_domain" {
-  description = "BinderHub domain name"
+variable "domain" {
+  description = "Domain name"
 }
 
 variable "TLS_email" {
