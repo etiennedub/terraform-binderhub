@@ -1,6 +1,3 @@
-locals {
-  cluster_name = "cluster-binderhub"
-}
 
 resource "random_string" "authentification" {
   count = 2
@@ -15,7 +12,7 @@ provider "google" {
 }
 
 resource "google_container_cluster" "cluster-binderhub" {
-  name                     = "${local.cluster_name}"
+  name                     = "${var.cluster_name}-cluster"
   zone                     = "${var.zone_region}"
   remove_default_node_pool = true
 
@@ -30,13 +27,13 @@ resource "google_container_cluster" "cluster-binderhub" {
 }
 
 resource "google_container_node_pool" "production" {
-  name       = "production"
+  name       = "${var.cluster_name}-production"
   cluster    = "${google_container_cluster.cluster-binderhub.name}"
   zone       = "${var.zone_region}"
   node_count = "1"
 
   node_config {
-    machine_type = "n1-standard-2"
+    machine_type = "${var.master_type}"
     image_type   = "ubuntu"
     labels {
       type = "production"
@@ -44,19 +41,19 @@ resource "google_container_node_pool" "production" {
   }
 
   autoscaling {
-    min_node_count = 1
-    max_node_count = 1
+    min_node_count = "${var.min_nodes_autoscaling}"
+    max_node_count = "${var.max_nodes_autoscaling}"
   }
 }
 
 resource "google_container_node_pool" "worker" {
-  name       = "worker"
+  name       = "${var.cluster_name}-worker"
   cluster    = "${google_container_cluster.cluster-binderhub.name}"
   zone       = "${var.zone_region}"
   node_count = "1"
 
   node_config {
-    machine_type = "n1-standard-1"
+    machine_type = "${var.node_type}"
     image_type   = "ubuntu"
   }
 }
@@ -64,7 +61,7 @@ resource "google_container_node_pool" "worker" {
 resource "google_compute_address" "default" {
   depends_on = ["google_container_node_pool.production", "google_container_cluster.cluster-binderhub"]
 
-  name   = "binderhub-ip"
+  name   = "${var.cluster_name}-binderhub-ip"
   region = "${var.zone}"
 }
 
@@ -75,7 +72,7 @@ resource "null_resource" "remote_install" {
     command = "sh ${path.module}/assets/setup.sh"
 
     environment {
-      cluster = "${local.cluster_name}"
+      cluster = "${var.cluster_name}"
       zone    = "${var.zone_region}"
       project = "${var.project_name}"
       ip      = "${google_compute_address.default.address}"

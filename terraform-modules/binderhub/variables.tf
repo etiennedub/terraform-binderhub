@@ -30,4 +30,6 @@ variable "is_gcp" {
 }
 
 variable "public_ip" {
+  description = "PublicIP is not required except for GCP"
+  default     = ""
 }

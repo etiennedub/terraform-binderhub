@@ -1,13 +1,23 @@
 variable project_name {
-  default = "crested-return-137823"
 }
 
 variable zone {
-  default = "us-central1"
 }
 
 variable zone_region {
-  default = "us-central1-a"
 }
 
+variable cluster_name {
+}
 
+variable min_nodes_autoscaling {
+}
+
+variable max_nodes_autoscaling {
+}
+
+variable node_type {
+}
+
+variable master_type {
+}
