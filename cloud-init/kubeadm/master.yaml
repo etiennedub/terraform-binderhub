@@ -13,4 +13,4 @@ runcmd:
   - echo "SUDO_UID=${admin_user} sudo -E /tmp/kubeadm-bootstrap/init-master.bash" >> /tmp/install.sh
   - su ${admin_user} -c "/tmp/install.sh"
   - kubeadm token create --print-join-command > /shared/kubeadm-join.bash
-  - kubectl label nodes ${project_name}-master type=production  
+  - kubectl label nodes `hostname` type=production  
