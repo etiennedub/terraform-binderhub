@@ -72,7 +72,8 @@ data "template_file" "kubeadm_master" {
   template = "${file("${path.module}/../../../cloud-init/kubeadm/master.yaml")}"
 
   vars {
-    admin_user = "${var.admin_user}"
+    admin_user   = "${var.admin_user}"
+    project_name = "${var.project_name}"
   }
 }
 
