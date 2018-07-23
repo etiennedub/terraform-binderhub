@@ -21,6 +21,3 @@ variable "admin_user" {
 variable "private_key_path" {
   description = "Path to private key file"
 }
-
-variable "project_name" {
-}

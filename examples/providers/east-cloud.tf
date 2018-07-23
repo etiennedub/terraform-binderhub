@@ -22,7 +22,6 @@ module "binderhub" {
   mem_alloc_gb     = 1.5
   cpu_alloc        = 1
   private_key_path = "~/.ssh/id_rsa"
-  project_name         = "${var.username}"
 }
 
 variable "username" {
