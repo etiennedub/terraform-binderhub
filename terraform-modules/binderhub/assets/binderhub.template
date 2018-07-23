@@ -6,14 +6,10 @@ jupyterhub:
 
   hub:
     baseUrl: /jupyter/
-    nodeSelector:
-      type: production
     services:
       binder:
         apiToken: "${api_token}"
   proxy:
-    nodeSelector:
-      type: production
     service:
       type: NodePort
     secretToken: "${secret_token}"
@@ -25,8 +21,6 @@ jupyterhub:
 
 # BinderHub config
 hub:
-  nodeSelector:
-    type: production
   url: https://${domain}/jupyter
 service:
   type: NodePort
@@ -41,6 +35,3 @@ ingress:
   https:
     enabled: true
     type: kube-lego
-build:
-  nodeSelector:
-    type: production
